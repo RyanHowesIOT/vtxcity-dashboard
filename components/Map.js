@@ -10,9 +10,9 @@ const mapboxAccessToken = "pk.eyJ1IjoibWFya3JvYmVydHNvbiIsImEiOiJjbDVtaGQzdWgwdH
 mapboxgl.accessToken = mapboxAccessToken;
 
 const Mapbox = () => {
-    const [lat, setLat] = useState(51.4367124);
-    const [lng, setLng] = useState(-1.42156591);
-    const [zoom, setZoom] = useState(12);
+    const [lat, setLat] = useState(51.661121);
+    const [lng, setLng] = useState(-3.803750);
+    const [zoom, setZoom] = useState(15);
     const [viewState, setViewState] = useState();
     const [curbsID, setCurbsID] = useState();
 
@@ -22,6 +22,9 @@ const Mapbox = () => {
         zoom: 1,
         transitionDuration: 100,
       });
+
+      const mapContainer = useRef(null);
+      const map = useRef(null);
   
       const mapRef = useRef();
 
@@ -56,6 +59,35 @@ const Mapbox = () => {
 
     }
 
+    useEffect(() => {
+        console.log({ viewport });
+    }, [viewport]);
+
+    useEffect(() => {
+
+        console.log("useEffect... ");
+
+        //getLatestLocation().catch(console.error);      
+
+         setViewport({
+            ...viewport,
+            latitude: lat,
+            longitude: lng,
+            zoom: 9,
+        });
+
+        // navigator.geolocation.getCurrentPosition((pos) => {
+   
+        //  setViewport({
+        //     ...viewport,
+        //     latitude: pos.coords.latitude,
+        //     longitude: pos.coords.longitude,
+        //     zoom: 3.5,
+        // });
+        // });
+   
+    }, [lat, lng]);
+    
     const geojson = {
         type: 'FeatureCollection',
         features: [
@@ -93,12 +125,21 @@ const Mapbox = () => {
       )
     )
     .addTo(map);**/
+
+    useEffect(() => {
+        if (!mapRef.current) return; // wait for map to initialize
+            mapRef.current.on('move', () => {            
+            setZoom(mapRef.current.getZoom().toFixed(2));
+            setLng(mapRef.current.getCenter().lng.toFixed(4));
+            setLat(mapRef.current.getCenter().lat.toFixed(4)); 
+        });
+        });
         
         useEffect(() => {
             console.log({ viewport });
           }, [viewport]);
 
-        useEffect(() => {
+          useEffect(() => {
 
             console.log("useEffect... ");
     
@@ -111,17 +152,18 @@ const Mapbox = () => {
                 zoom: 9,
             });
     
-             //navigator.geolocation.getCurrentPosition((pos) => {
+            // navigator.geolocation.getCurrentPosition((pos) => {
        
-              //setViewport({
-                //...viewport,
-                // latitude: pos.coords.latitude,
-                //longitude: pos.coords.longitude,
-                 //zoom: 3.5,
-             //});
-             //});
+            //  setViewport({
+            //     ...viewport,
+            //     latitude: pos.coords.latitude,
+            //     longitude: pos.coords.longitude,
+            //     zoom: 3.5,
+            // });
+            // });
        
         }, [lat, lng]);
+    
 
         useEffect(() => {  
             if (mapRef.current) {
@@ -138,17 +180,16 @@ const Mapbox = () => {
                     }, 10000);
                 });
             }
-        });
+        }); // end of useEffect #2
 
     return (
         <Map
-        ref={mapRef}
-        initialViewState={{
-            longitude: lng,
-            latitude: lat,
-            zoom
-        }}
-        {...viewState}
+            initialViewState={{
+                longitude: lng,
+                latitude: lat,
+                zoom
+            }}
+            {...viewState}
             className='absolute h-screen w-screen'
             mapStyle="mapbox://styles/mapbox/streets-v11"
             mapboxAccessToken={mapboxAccessToken}
